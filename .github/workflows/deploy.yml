@@ -2,7 +2,7 @@ name: Deploy Sumit-portfolio to EC2
 
 on:
   push:
-    branches: [main]
+    branches: [main]  # Triggers deployment on push to main branch
 
 jobs:
   deploy:
@@ -17,9 +17,7 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-       
 
     - name: Upload static files to EC2
       run: |
-        rsync -avz --delete ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/Sumit-portfolio
+        rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/Sumit-portfolio
