@@ -21,4 +21,4 @@ jobs:
 
     - name: Upload static files to EC2
       run: |
-        rsync -avz --delete ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/portfolio
+        rsync -avz --delete ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/Sumit-portfolio
