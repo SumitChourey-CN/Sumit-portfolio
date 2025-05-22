@@ -1,4 +1,4 @@
-name: Deploy Static Site to EC2
+name: Deploy to AWS EC2
 
 on:
   push:
@@ -6,19 +6,26 @@ on:
 
 jobs:
   deploy:
+    name: Deploy via SSH
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up SSH
+    - name: Setup SSH
       run: |
         mkdir -p ~/.ssh
         echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-    - name: Upload static files to EC2
+    - name: Deploy to EC2
       run: |
-        rsync -avz --delete ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/Sumit-portfolio
+        ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          cd /var/www/Sumit-portfolio
+          git pull origin main
+          npm install
+          npm run build
+          pm2 restart Sumit-portfolio
+        EOF
