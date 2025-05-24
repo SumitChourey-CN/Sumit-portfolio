@@ -27,5 +27,5 @@ jobs:
             docker stop sumit-container || true
             docker rm sumit-container || true
             docker build -t sumit-portfolio .
-            docker run -d -p 3000:3000 --name sumit-container sumit-portfolio
+            docker run -d -p 3001:3001 --name sumit-container sumit-portfolio
           EOF
