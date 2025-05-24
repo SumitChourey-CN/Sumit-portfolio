@@ -1,24 +1,31 @@
-name: Deploy Sumit-portfolio to EC2
+name: Deploy to EC2
 
 on:
   push:
-    branches: [main]  # Triggers deployment on push to main branch
+    branches:
+      - main  # or your deploy branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Set up SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+      - name: Add SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-    - name: Upload static files to EC2
-      run: |
-          rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/Sumit-portfolio
-
+      - name: SSH into EC2 and deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            cd /home/ubuntu/Sumit-portfolio
+            git pull origin main
+            docker stop sumit-container || true
+            docker rm sumit-container || true
+            docker build -t sumit-portfolio .
+            docker run -d -p 3000:3000 --name sumit-container sumit-portfolio
+          EOF
